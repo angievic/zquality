@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { walkFiles } from './utils.js';
 import { runAllChecks } from './checks/index.js';
-import type { CheckResult, CategoryScore, ZqualityResult, ZqualityOptions } from './types.js';
+import type { CheckResult, CategoryScore, ZqualityResult, ZqualityOptions, RiskItem } from './types.js';
 
 export type { CheckResult, CategoryScore, ZqualityResult, ZqualityOptions };
 export type { Severity } from './types.js';
@@ -72,6 +72,28 @@ function buildPositives(checks: CheckResult[]): string[] {
     .map((c) => `${c.category}/${c.name}: ${c.detail}`);
 }
 
+function computeHealthScore(checks: CheckResult[]): number {
+  const healthChecks = checks.filter((c) => c.category === 'codeHealth');
+  return computeScore(healthChecks);
+}
+
+function buildRisks(checks: CheckResult[]): RiskItem[] {
+  const healthChecks = checks.filter((c) => c.category === 'codeHealth' && !c.passed);
+  const typeMap: Record<string, RiskItem['type']> = {
+    no_circular_deps: 'circular_import',
+    no_redundant_code: 'redundant_code',
+    no_dead_exports: 'dead_export',
+    low_coupling: 'high_coupling',
+    no_copy_paste_patterns: 'copy_paste',
+  };
+  return healthChecks.map((c) => ({
+    type: typeMap[c.name] ?? 'redundant_code',
+    severity: c.severity,
+    detail: c.detail,
+    files: c.fileHint ? [c.fileHint] : [],
+  }));
+}
+
 export async function runZquality(
   root: string,
   opts: ZqualityOptions = {},
@@ -92,10 +114,15 @@ export async function runZquality(
   const allFiles = walkFiles(absRoot);
   const filesScanned = allFiles.length;
 
+  const healthScore = computeHealthScore(checks);
+  const risks = buildRisks(checks);
+
   const result: ZqualityResult = {
     root: absRoot,
     score,
     grade,
+    healthScore,
+    risks,
     checks,
     categoryScores,
     criticalFailures,

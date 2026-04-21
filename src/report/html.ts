@@ -99,6 +99,17 @@ export async function writeHtmlReport(result: ZqualityResult, outputDir: string)
     })
     .join('');
 
+  const healthColor = result.healthScore >= 80 ? '#16a34a' : result.healthScore >= 50 ? '#ca8a04' : '#dc2626';
+
+  const risksHtml = result.risks.length > 0
+    ? result.risks.map((r) => {
+        const riskIcon = r.severity === 'high' ? '🟠' : r.severity === 'medium' ? '🟡' : '🔵';
+        const typeLabel = r.type.replace(/_/g, ' ');
+        const files = r.files.length > 0 ? `<code class="file-hint">${escapeHtml(r.files.join(', '))}</code>` : '';
+        return `<li class="risk-item"><span class="risk-icon">${riskIcon}</span><div><strong>${typeLabel}</strong><br>${escapeHtml(r.detail)}${files}</div></li>`;
+      }).join('')
+    : '<li class="no-items">No code health risks detected.</li>';
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -113,6 +124,9 @@ export async function writeHtmlReport(result: ZqualityResult, outputDir: string)
     .grade-badge { width: 80px; height: 80px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; background: ${gc}; color: #fff; }
     .grade-letter { font-size: 36px; font-weight: 900; line-height: 1; }
     .grade-score { font-size: 12px; font-weight: 700; opacity: 0.9; }
+    .health-badge { width: 80px; height: 80px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; background: ${healthColor}; color: #fff; }
+    .health-label { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
+    .health-score { font-size: 22px; font-weight: 900; line-height: 1; }
     .header-text h1 { font-size: 24px; font-weight: 800; }
     .header-text p { font-size: 12px; color: #555; margin-top: 4px; }
     .meta { font-size: 11px; color: #888; margin-top: 8px; }
@@ -142,6 +156,9 @@ export async function writeHtmlReport(result: ZqualityResult, outputDir: string)
     .file-hint { font-family: monospace; font-size: 10px; color: #888; display: block; margin-top: 2px; }
     .critical-list { display: flex; flex-wrap: wrap; gap: 8px; }
     .critical-badge { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-family: monospace; font-size: 11px; padding: 4px 8px; border-radius: 4px; }
+    .risk-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .risk-item { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px; font-size: 13px; }
+    .risk-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
   </style>
 </head>
 <body>
@@ -151,11 +168,21 @@ export async function writeHtmlReport(result: ZqualityResult, outputDir: string)
         <span class="grade-letter">${escapeHtml(result.grade)}</span>
         <span class="grade-score">${result.score}/100</span>
       </div>
+      <div class="health-badge">
+        <span class="health-label">Health</span>
+        <span class="health-score">${result.healthScore}</span>
+        <span class="grade-score">/ 100</span>
+      </div>
       <div class="header-text">
         <h1>Zquality Report</h1>
         <p>${escapeHtml(result.root)}</p>
         <p class="meta">${result.filesScanned} files scanned &middot; ${escapeHtml(result.createdAt)}</p>
       </div>
+    </div>
+
+    <div class="section">
+      <h2>Repo Health Risks</h2>
+      <ul class="risk-list">${risksHtml}</ul>
     </div>
 
     ${result.criticalFailures.length > 0 ? `

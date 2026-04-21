@@ -9,6 +9,7 @@ import { checkDocsQuality } from './docsQuality.js';
 import { checkSecrets } from './secretsCheck.js';
 import { checkCiCd } from './ciCd.js';
 import { checkErrorHandling } from './errorHandling.js';
+import { checkCodeHealth } from './codeHealth.js';
 
 export function runAllChecks(root: string): CheckResult[] {
   const checks: CheckResult[] = [
@@ -22,6 +23,7 @@ export function runAllChecks(root: string): CheckResult[] {
     ...checkSecrets(root),
     ...checkCiCd(root),
     ...checkErrorHandling(root),
+    ...checkCodeHealth(root),
   ];
   return checks;
 }

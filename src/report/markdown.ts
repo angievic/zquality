@@ -10,9 +10,24 @@ export async function writeMarkdownReport(result: ZqualityResult, outputDir: str
   lines.push('');
   lines.push(`**Project:** ${result.root}`);
   lines.push(`**Score:** ${result.score}/100 — Grade: **${result.grade}**`);
+  lines.push(`**Health Score:** ${result.healthScore}/100`);
   lines.push(`**Files scanned:** ${result.filesScanned}`);
   lines.push(`**Date:** ${result.createdAt}`);
   lines.push('');
+
+  // Health risks section
+  if (result.risks.length > 0) {
+    const healthEmoji = result.healthScore >= 80 ? '🟢' : result.healthScore >= 50 ? '🟡' : '🔴';
+    lines.push(`## ${healthEmoji} Repo Health: ${result.healthScore}/100`);
+    lines.push('');
+    lines.push('### Risks detected');
+    for (const risk of result.risks) {
+      const icon = risk.severity === 'high' ? '🟠' : risk.severity === 'medium' ? '🟡' : '🔵';
+      lines.push(`- ${icon} **${risk.type.replace(/_/g, ' ')}**: ${risk.detail}`);
+      if (risk.files.length > 0) lines.push(`  - Files: \`${risk.files.join('`, `')}\``);
+    }
+    lines.push('');
+  }
 
   if (result.criticalFailures.length > 0) {
     lines.push('## Critical Failures');

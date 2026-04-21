@@ -16,10 +16,19 @@ export type CategoryScore = {
   total: number;
 };
 
+export type RiskItem = {
+  type: 'circular_import' | 'redundant_code' | 'dead_export' | 'high_coupling' | 'copy_paste';
+  severity: Severity;
+  detail: string;
+  files: string[]; // affected file paths (relative to root)
+};
+
 export type ZqualityResult = {
   root: string;
   score: number; // 0-100 weighted
   grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  healthScore: number; // 0-100, based on codeHealth checks only
+  risks: RiskItem[];   // structured list of detected code risks
   checks: CheckResult[];
   categoryScores: CategoryScore[];
   criticalFailures: string[];
