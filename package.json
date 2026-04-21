@@ -1,0 +1,28 @@
+{
+  "name": "zquality",
+  "version": "0.1.0",
+  "description": "Tech-lead code quality reviewer — architecture, conventions, tests, docs",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "bin": { "zquality": "./dist/cli.js" },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "node --test tests/checks.test.ts"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "glob": "^11.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0"
+  }
+}

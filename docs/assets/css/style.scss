@@ -1,0 +1,33 @@
+---
+---
+
+// zquality brand: emerald
+$header-bg-color: #10b981;
+$header-bg-color-secondary: #059669;
+$header-heading-color: #ffffff;
+$header-heading-link-color: rgba(255, 255, 255, 0.8);
+$section-headings-color: #047857;
+$body-link-color: #10b981;
+$blockquote-text-color: #059669;
+
+@import "{{ site.theme }}";
+
+// Additional overrides
+.btn {
+  background-color: #10b981;
+  background-image: linear-gradient(135deg, #10b981, #059669);
+  border-color: transparent;
+  &:hover {
+    background-color: #059669;
+    background-image: linear-gradient(135deg, #059669, #047857);
+  }
+}
+
+.page-header {
+  background-image: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+code {
+  background-color: #ecfdf5;
+  color: #047857;
+}

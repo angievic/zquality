@@ -1,0 +1,25 @@
+name: "[Zbot] Zquality - Code Quality Review"
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: "0 8 * * 1"
+jobs:
+  zquality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm install -g zquality
+      - run: zquality analyze . --output ./zquality-output --upload --project-name "${{ github.repository }}"
+        env:
+          ZPULSE_API_URL: ${{ secrets.ZPULSE_API_URL }}
+          ZPULSE_BOT_TOKEN: ${{ secrets.ZPULSE_BOT_TOKEN }}
+          ZPULSE_PROJECT_ID: ${{ secrets.ZPULSE_PROJECT_ID }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zquality-report-${{ github.run_id }}
+          path: ./zquality-output/
